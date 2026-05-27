@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AEP Knowledge Base</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  color-scheme: dark;
+  --bg: #080b12;
+  --surface: #0d1117;
+  --surface2: #111827;
+  --border: #1e2535;
+  --border2: #2a3450;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --dim: #374151;
+  --accent: #818cf8;
+  --accent-soft: #a5b4fc;
+  --accent-bg: rgba(129,140,248,0.08);
+  --green: #4ade80;
+  --green-bg: rgba(74,222,128,0.1);
+  --amber: #fcd34d;
+  --amber-bg: rgba(252,211,77,0.07);
+  --sidebar-w: 258px;
+  --nav-h: 56px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* ── TOP NAV ──────────────────────────────────────────── */
+#topnav {
+  height: var(--nav-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  gap: 14px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.logo {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  cursor: pointer; white-space: nowrap; text-decoration: none;
+  flex-shrink: 0;
+}
+.logo-icon {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #fff;
+  letter-spacing: -0.5px;
+  box-shadow: 0 0 12px rgba(124,58,237,0.35);
+}
+.logo-sub { color: var(--muted); font-weight: 400; }
+
+#search-wrap {
+  flex: 1; max-width: 420px; position: relative; margin: 0 auto;
+}
+.search-icon-el {
+  position: absolute; left: 11px; top: 50%; transform: translateY(-50%);
+  color: var(--dim); pointer-events: none;
+}
+#search {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 7px 38px 7px 34px;
+  color: var(--text);
+  font-size: 13.5px; font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+#search:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(129,140,248,0.12);
+}
+#search::placeholder { color: var(--dim); }
+.search-kbd {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 10px; color: var(--dim); background: var(--surface);
+  border: 1px solid var(--border2); border-radius: 4px;
+  padding: 1px 5px; pointer-events: none;
+}
+
+.nav-pills { display: flex; gap: 3px; margin-left: auto; flex-shrink: 0; }
+.nav-pill {
+  font-size: 12.5px; color: var(--muted);
+  padding: 5px 11px; border-radius: 7px;
+  cursor: pointer; transition: background 0.15s, color 0.15s;
+  border: 1px solid transparent;
+}
+.nav-pill:hover { background: var(--surface2); color: var(--text); }
+.nav-pill.active {
+  background: var(--accent-bg); color: var(--accent-soft);
+  border-color: rgba(129,140,248,0.2);
+}
+
+/* ── LAYOUT ───────────────────────────────────────────── */
+#layout { display: flex; flex: 1; overflow: hidden; }
+
+/* ── SIDEBAR ──────────────────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w); background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; flex-shrink: 0;
+}
+#sidebar-scroll { flex: 1; overflow-y: auto; padding: 14px 0; }
+
+.sb-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--dim);
+  padding: 2px 16px 8px;
+}
+.sb-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 7px 14px; cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+  color: var(--muted); font-size: 13px;
+}
+.sb-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
+.sb-item.active {
+  background: var(--accent-bg);
+  border-left-color: var(--accent);
+  color: var(--accent-soft);
+}
+.sb-item-title { flex: 1; line-height: 1.3; }
+
+.sp {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.06em; padding: 2px 5px; border-radius: 4px; flex-shrink: 0;
+}
+.sp-established { background: var(--green-bg); color: var(--green); }
+.sp-emerging { background: var(--amber-bg); color: var(--amber); }
+
+.sb-divider { height: 1px; background: var(--border); margin: 10px 0; }
+
+/* ── MAIN ─────────────────────────────────────────────── */
+#main { flex: 1; overflow-y: auto; position: relative; background: var(--bg); }
+#content { max-width: 760px; padding: 40px 48px 80px; }
+
+/* Fade transition */
+.fade-out { opacity: 0; transition: opacity 0.1s; }
+#content { transition: opacity 0.12s; }
+
+/* ── HOME ─────────────────────────────────────────────── */
+.home-kicker {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--accent); margin-bottom: 8px;
+}
+.home-title {
+  font-size: 28px; font-weight: 700; color: var(--text);
+  line-height: 1.2; margin-bottom: 10px;
+}
+.home-desc {
+  font-size: 14px; color: var(--muted); line-height: 1.75;
+  max-width: 560px; margin-bottom: 28px;
+}
+
+.flow-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 15px 18px; margin-bottom: 28px;
+  font-size: 13.5px; color: var(--muted); line-height: 1.8;
+}
+.flow-box strong { color: var(--text); }
+
+.sec-label {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.1em; color: var(--dim); margin-bottom: 12px;
+}
+
+.article-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 10px;
+}
+.a-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 15px; cursor: pointer;
+  transition: border-color 0.18s, transform 0.18s, box-shadow 0.18s;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.a-card:hover {
+  border-color: rgba(129,140,248,0.4);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.card-title { font-size: 13.5px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.card-desc { font-size: 12px; color: var(--dim); line-height: 1.55; flex: 1; }
+.card-foot {
+  font-size: 11px; color: var(--dim);
+  border-top: 1px solid var(--border); padding-top: 7px;
+}
+
+/* ── ARTICLE PAGE ─────────────────────────────────────── */
+.art-header {
+  margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--border);
+}
+.art-title { font-size: 24px; font-weight: 700; color: var(--text); line-height: 1.25; margin-bottom: 12px; }
+.art-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.meta-date { font-size: 12px; color: var(--dim); }
+.src-tag {
+  font-size: 11px; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--muted); padding: 2px 7px; border-radius: 4px;
+}
+
+.art-summary {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent); border-radius: 0 8px 8px 0;
+  padding: 13px 17px; font-size: 13.5px; color: #94a3b8;
+  line-height: 1.75; margin-bottom: 28px;
+}
+
+.art-body h2 {
+  font-size: 16px; font-weight: 650; color: var(--text);
+  margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.art-body h3 {
+  font-size: 14px; font-weight: 650; color: #c4d4ed; margin: 20px 0 8px;
+}
+.art-body p {
+  font-size: 14px; line-height: 1.82; color: #94a3b8; margin-bottom: 14px;
+}
+.art-body strong { color: #dde6f4; font-weight: 600; }
+.art-body code {
+  font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: rgba(129,140,248,0.1); color: var(--accent-soft);
+  padding: 1px 5px; border-radius: 4px; border: 1px solid rgba(129,140,248,0.15);
+}
+.art-body ul, .art-body ol {
+  margin: 6px 0 16px 20px; display: flex; flex-direction: column; gap: 5px;
+}
+.art-body li { font-size: 14px; line-height: 1.75; color: #94a3b8; }
+.art-body a { color: var(--accent-soft); text-decoration: none; border-bottom: 1px solid rgba(165,180,252,0.3); }
+.art-body a:hover { border-bottom-color: var(--accent-soft); }
+
+.wikilink {
+  color: var(--accent-soft); cursor: pointer;
+  border-bottom: 1px dashed rgba(165,180,252,0.4);
+  transition: color 0.12s, border-color 0.12s;
+}
+.wikilink:hover { color: #c7d2fe; border-bottom-color: #c7d2fe; }
+.wikilink-dead { color: #52526a; border-bottom: 1px dashed #3a3a55; }
+
+/* ── RELATED ──────────────────────────────────────────── */
+.related-section { margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--border); }
+.related-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.related-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface); border: 1px solid var(--border2);
+  color: var(--muted); font-size: 12.5px;
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  transition: all 0.15s;
+}
+.related-chip:hover {
+  background: var(--accent-bg); border-color: rgba(129,140,248,0.3); color: var(--accent-soft);
+}
+
+/* ── OPEN QUESTIONS ───────────────────────────────────── */
+.oq-section {
+  margin-top: 28px;
+  background: rgba(252,211,77,0.04); border: 1px solid rgba(252,211,77,0.12);
+  border-radius: 10px; padding: 16px 20px;
+}
+.oq-title {
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  color: #92400e; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 6px;
+}
+.oq-section li { font-size: 13px; color: #78716c; line-height: 1.7; list-style: none; }
+.oq-section ul { display: flex; flex-direction: column; gap: 7px; padding: 0; margin: 0; }
+.oq-section li::before { content: "— "; color: #52450d; }
+
+/* ── SEARCH ───────────────────────────────────────────── */
+.sr-item {
+  padding: 14px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.sr-item:last-child { border-bottom: none; }
+.sr-top { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.sr-title { font-size: 14px; font-weight: 600; color: var(--text); transition: color 0.12s; }
+.sr-item:hover .sr-title { color: var(--accent-soft); }
+.sr-snip { font-size: 12.5px; color: var(--dim); line-height: 1.65; }
+.sr-snip mark {
+  background: rgba(129,140,248,0.18); color: var(--accent-soft);
+  border-radius: 2px; padding: 0 2px; font-style: normal;
+}
+
+/* ── QUESTIONS PAGE ───────────────────────────────────── */
+.qp-cat { margin-bottom: 30px; }
+.qp-cat-title {
+  font-size: 14px; font-weight: 650; color: var(--text);
+  margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.qp-row {
+  display: flex; gap: 10px; padding: 10px 0;
+  border-bottom: 1px solid rgba(30,37,53,0.8);
+}
+.qp-row:last-child { border-bottom: none; }
+.qp-dot { flex-shrink: 0; margin-top: 3px; font-size: 11px; }
+.qp-text { font-size: 13.5px; color: var(--muted); line-height: 1.75; }
+
+/* ── EMPTY STATE ──────────────────────────────────────── */
+.empty {
+  padding: 60px 20px; text-align: center; color: var(--dim);
+}
+.empty svg { opacity: 0.3; margin-bottom: 14px; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.empty-desc { font-size: 13px; }
+
+/* ── SCROLLBARS ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4560; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP NAV -->
+  <nav id="topnav">
+    <div class="logo" onclick="go('home')">
+      <div class="logo-icon">A</div>
+      <span>AEP <span class="logo-sub">/ Knowledge Base</span></span>
+    </div>
+    <div id="search-wrap">
+      <svg class="search-icon-el" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="search" id="search" placeholder="Search articles… (press / to focus)" autocomplete="off" spellcheck="false">
+      <span class="search-kbd">esc</span>
+    </div>
+    <div class="nav-pills">
+      <div class="nav-pill active" id="pill-wiki" onclick="go('home')">Wiki</div>
+      <div class="nav-pill" id="pill-qs" onclick="go('questions')">Open Questions</div>
+    </div>
+  </nav>
+
+  <!-- BODY -->
+  <div id="layout">
+    <aside id="sidebar">
+      <div id="sidebar-scroll">
+        <div class="sb-label">Navigate</div>
+        <div class="sb-item" id="sl-home" onclick="go('home')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+          <span class="sb-item-title">Home</span>
+        </div>
+        <div class="sb-item" id="sl-questions" onclick="go('questions')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+            <line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <span class="sb-item-title">Open Questions</span>
+        </div>
+        <div class="sb-divider"></div>
+        <div class="sb-label">Articles</div>
+        <div id="sb-articles"></div>
+      </div>
+    </aside>
+
+    <main id="main">
+      <div id="content"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────
+//  DATA
+// ─────────────────────────────────────────────────────────
+
+const ARTICLES = [
+  {
+    id: 'xdm-schemas',
+    title: 'XDM Schemas',
+    status: 'established',
+    updated: '2026-05-26',
+    sources: ['xdm-system-overview-adobe', 'aep-xdm-schema-best-practices'],
+    related: ['customer-journey-analytics','web-sdk-implementation','real-time-customer-profile','segmentation-and-audiences','datastreams-and-edge-network'],
+    blurb: 'The XDM data model — schemas, classes, field groups, the three data behaviours, and practitioner design rules.',
+    summary: `Experience Data Model (XDM) is Adobe's open specification for describing customer experience data, and XDM System is how that spec gets operationalised inside Experience Platform. Every piece of data has to conform to a schema before it can land in the platform, and each schema is built from one base class plus zero or more field groups. The class decides the schema's data behaviour — record or time-series — which in turn decides how every downstream service treats the data.`,
+    body: `## The building blocks
+
+A schema is the contract. Before anything can be ingested, you compose a schema that describes the structure of the incoming data and constrains what each field can hold. The platform is schema-agnostic: any schema that conforms to XDM is available to every Platform service, so the schema you design propagates through Catalog, Query Service, Profile, and segmentation.
+
+Schemas are assembled from two building blocks. A **base class** establishes the smallest set of properties a schema needs to represent a particular behaviour, and **field groups** add reusable sets of fields on top. Adobe ships a large library of standard field groups and data types covering common cross-industry concepts, and the UI surfaces a popularity metric on each field group to steer modelling decisions.
+
+The class assignment matters more than anything else, because it locks in the data behaviour. XDM sorts data into three behaviours:
+
+- **Record** — attributes of a subject (a person or an organisation). Who someone is.
+- **Time-series** — a snapshot of the system when an action happened. What happened, and when.
+- **Ad-hoc** — fields namespaced to a single dataset, generated automatically by ingestion workflows like CSV uploads.
+
+**XDM Individual Profile** is the record class — a single representation of a subject's attributes that works across the full identity spectrum, from an anonymous cookie to a fully identified person. **XDM ExperienceEvent** is the time-series class — an immutable, factual record of what occurred at a point in time. Events can be explicit (a directly observable action, like a click) or implicit (raised without human action, like a newsletter send). Because events are immutable and timestamped, they power time-domain analysis across windows.
+
+Once a schema exists, a **dataset** references it and becomes the thing data is actually ingested into. Datasets are tracked by Catalog Service and stored in the data lake. The connection to Profile runs through a tag: when you enable a schema for Real-Time Customer Profile and mark it for the **union schema** — the aggregate of every schema implementing the same class — it feeds the profile store.
+
+One newer wrinkle: **relational schemas** (via Data Mirror) break the usual class-plus-field-group model. They're built for relational-style data, enforce primary/foreign keys, and are optimised for change-data-capture ingestion from Snowflake, Databricks, or BigQuery. They don't use classes or field groups at all. Availability is gated.
+
+## Design in practice
+
+**Field groups are reusability units, scoped to a class.** Design them to be lifted from one schema into another — a "Product" field group should drop unchanged into both a web event schema and an in-store transaction schema. Field groups don't cross class boundaries, so prefix names with the class they belong to: \`Event - Product\`, \`Profile - Customer Attributes\`, \`Lookup - Product\`. In practice a field group maps onto a root object — "Product" lives at \`_tenant.product[]\`, "Identity" at \`_tenant.identity\`.
+
+**Custom fields go in your tenant namespace.** Add custom fields to your own tenant, never into an Adobe-designed field group. Mixing custom fields into Adobe field groups fractures the schema.
+
+**Model events as a string, not a field per event.** The anti-pattern is creating a new field for every event — \`_tenant.events.formSubmit\` typed as an integer. That forces a schema change for every new event. Instead, use the standard \`eventType\` field and pass a camelCase string like \`formSubmitSuccess\`. New events become new strings, never new fields. Downstream in CJA, you expose \`eventType\` as a metric pinned to the expected string via Include/Exclude Values.
+
+**One schema and one dataset for web plus mobile.** Web and mobile are both digital behavioural data — they belong in a single shared schema and a single event-based dataset. CJA stitching only operates within a single event-based dataset, never across two. See [[customer-journey-analytics]] for the stitching consequence and [[web-sdk-implementation]] for the collection side.
+
+**Carry both unit and total values.** For anything with a per-item and an aggregate form — price, discount — model both (\`unitPrice\` and \`totalPrice\`, \`unitDiscount\` and \`totalDiscount\`). Totals make CJA reporting straightforward; unit values matter when Event Forwarding hands a single value to a third party.`,
+    oq: [
+      'Profile-enablement planning (when to enable a schema for Profile, how that interacts with the union schema) isn\'t backed by an ingested source yet.',
+      'Observed schemas: when does Platform\'s type inference go wrong, and what\'s the cleanup cost? Not covered by either source.'
+    ]
+  },
+  {
+    id: 'web-sdk-implementation',
+    title: 'Web SDK Implementation',
+    status: 'emerging',
+    updated: '2026-05-26',
+    sources: ['adobe-web-sdk-best-practices', 'aep-xdm-schema-best-practices'],
+    related: ['datastreams-and-edge-network','xdm-schemas','customer-journey-analytics'],
+    blurb: 'The client-side Web SDK — using the data object for AA migrations and why a SDK migration is not a CJA implementation.',
+    summary: `The Adobe Web SDK (\`alloy.js\`, usually deployed through Tags) is the client-side library that collects data and sends it to the Edge Network. The recurring trap: treating "we moved to the Web SDK" as the same thing as "we're ready for CJA." It isn't. How you structure the payload — whether you send Analytics-shaped data or XDM — determines how much rework a future CJA implementation costs.`,
+    body: `## Overview
+
+The Web SDK replaces per-product JavaScript libraries with a single client that aggregates everything into one payload bound for a datastream. On the page you configure it and call its event commands; the routing and per-service handling happen server-side in the datastream. See [[datastreams-and-edge-network]] for that server-side half.
+
+**Web SDK adoption and CJA readiness are different projects.** Implementing the Web SDK on its own does not prepare a company for CJA. The SDK is the collection mechanism for both, but the data you send for Adobe Analytics and the data CJA wants are shaped differently.
+
+## Migrating Adobe Analytics: use the \`data\` object
+
+When you move Adobe Analytics from AppMeasurement to the Web SDK, send your data through the SDK's \`data\` object — and do **not** build an AEP XDM schema for it. Data destined for Adobe Analytics still has to follow Analytics' own syntax and requirements, which are inherently different from an implementation designed for CJA. The \`data\` object is auto-mapped to Adobe Analytics by the datastream's Adobe Analytics service.
+
+The alternatives are both worse. You could send the Adobe Analytics ExperienceEvent schema field group, but it preserves the props/eVars/events nomenclature, which CJA can't use. Or you could use AEP Data Prep to map custom schema fields onto Analytics fields — more moving parts, more to maintain. The \`data\` object is the most scalable and least complicated path.
+
+**\`s.events\` and \`s.products\` still need custom code.** Even on the \`data\`-object path, the variables that used to be \`s.events\` and \`s.products\` require custom handling. The forward-looking CJA way to model product data is an array of objects, but Adobe Analytics has no concept of an array of objects — so you can't simply pass the CJA shape and have Analytics understand it. This is another concrete example of why a Web SDK migration is not, by itself, a step into CJA: the Analytics path and the XDM/CJA path diverge exactly where the richest data lives.
+
+The implication for anyone planning both: decide early whether the engagement is an Analytics lift-and-shift or a genuine CJA build, because the payload design forks at the Web SDK. If CJA is the real destination, the schema-side design in [[xdm-schemas]] (the \`eventType\` string pattern, a shared web/mobile dataset, unit and total fields) is where readiness actually comes from.`,
+    oq: [
+      'The Tags extension mechanics — configure/sendEvent command surface, consent integration, and on-page debugging — aren\'t covered by an ingested source yet.',
+      'The future array-of-objects product model for CJA is referenced but not specified — the XDM structure and data-layer contract behind it aren\'t sourced.'
+    ]
+  },
+  {
+    id: 'datastreams-and-edge-network',
+    title: 'Datastreams and the Edge Network',
+    status: 'emerging',
+    updated: '2026-05-26',
+    sources: ['datastreams-overview-adobe'],
+    related: ['web-sdk-implementation','xdm-schemas','real-time-customer-profile'],
+    blurb: 'Server-side config on the Edge Network that routes SDK data to Adobe apps and destinations, plus HIPAA/sensitive-data handling.',
+    summary: `A datastream is the server-side configuration that tells the Edge Network where data collected by the Web and Mobile SDKs should go. It decouples routing from your site code: the SDK request carries a \`datastreamId\`, and the datastream decides which Adobe apps and downstream destinations receive the data. Change the routing without touching the page.`,
+    body: `## How it works
+
+The split between client and server is the whole point. The SDK's \`configure\` command handles client-side settings like \`edgeDomain\`; everything else — which products get the data, how it's mapped, where it's stored — is datastream configuration. When a request hits the Edge Network, the \`datastreamId\` in that request resolves to a datastream, and that controls the next hop. Because the configuration lives server-side, you can re-route or add a destination without a code deployment.
+
+The **Edge Network** is a globally distributed network of servers built to receive and process data at scale. The practical payoff is consolidation: instead of dropping a separate library for each Adobe product on the page, you implement one SDK that aggregates everything into a single payload sent to one datastream. From there the datastream fans the data out to whatever you've configured — Adobe Analytics, Target, Audience Manager, Experience Platform — or to an event-forwarding property for third-party relay.
+
+## Sensitive data and governance
+
+Most of the current source concerns **sensitive data** handling, which matters for any client in a regulated space (especially health). Three mechanisms apply:
+
+- **Encryption.** All data in transit uses HTTPS TLS 1.2. Data brought into Experience Platform is encrypted at rest in the data lake.
+- **Data governance.** Datastreams enforce Platform's data-governance labels. Apply a sensitive-data usage label to a schema or field — \`RHD\` for Protected Health Information, \`S1\` for geolocation — and the datastream's routing options change accordingly.
+- **Audit logs.** Every create, update, or delete of a datastream produces an audit log recording who did what and when.
+
+The governance enforcement is strict and **bidirectional** — the part most likely to bite during an implementation. If a schema carries sensitive labels, the datastream can only send that data to HIPAA-ready destinations, and right now the only HIPAA-ready destination datastreams support is Experience Platform itself. Analytics, Target, Audience Manager, event forwarding, and edge destinations are all disabled for a datastream carrying sensitive labels.
+
+The enforcement also runs the other direction: if a schema is already in use by a datastream that sends to non-HIPAA-ready services, trying to add a sensitive label to that schema is blocked as a policy violation — and the message names the offending datastream. The order of operations matters. Labelling and routing decisions constrain each other; you can paint yourself into a corner by configuring one before the other.`,
+    oq: [
+      'This source is overview-level and skewed toward sensitive-data handling. The actual datastream configuration workflow (creating one, mapping fields with Data Prep) lives in separate Adobe docs not yet ingested.',
+      'Event forwarding (the server-side rules engine for third-party relay) is mentioned but not yet explained by a dedicated source.'
+    ]
+  },
+  {
+    id: 'real-time-customer-profile',
+    title: 'Real-Time Customer Profile',
+    status: 'emerging',
+    updated: '2026-05-26',
+    sources: ['real-time-customer-profile-overview-adobe'],
+    related: ['xdm-schemas','segmentation-and-audiences','datastreams-and-edge-network'],
+    blurb: 'How Profile merges fragments into a unified customer view via identity stitching and merge policies, exposed as the union view.',
+    summary: `Real-Time Customer Profile is the service that merges data scattered across channels, CRM, and third-party systems into one timestamped view of each customer. It does this by ingesting record and event data, stitching identities through Identity Service, and applying merge policies to resolve conflicts between fragments. The merged result is exposed as a union view and is what segmentation and every downstream Adobe app reads from.`,
+    body: `## Fragments vs. merged profiles
+
+The core distinction to hold onto is **fragments versus merged profiles**. A profile fragment is a single primary identity plus its record or event data within one dataset. A real customer almost always shows up as several fragments — one per dataset they appear in — and Profile merges those into a single view. Because of this, the fragment count in a system is always higher than the merged-profile count. Merging is not a one-time batch job; it's continuous as new data arrives.
+
+When fragments disagree — one dataset says a customer is single, another says married — the **merge policy** decides which value wins. Merge policies are the rules for how conflicting data is prioritised and combined. You can create multiple policies, manage them through the API or UI, and set one as the organisation's default. They also govern identity stitching behaviour, which is where they intersect with Identity Service.
+
+## Underlying stores
+
+Profile sits on top of, but separate from, two other stores. The **Profile data store** (Azure Cosmos DB) holds the merged profile data. The **data lake** (Azure Data Lake storage) holds catalog data. The **identity graph** holds Identity Service's link data. Profile uses Identity Service to merge related fragments through identity mapping, but keeps its own copy of the resolved data rather than reaching into the graph at read time.
+
+## Entity types
+
+A profile is built from a **primary entity** — typically carrying an individual's traits, behaviours, and audience memberships — plus supporting entities. **Dimensional entities** (lookup/classification entities) simplify modelling for data shared across events or records. **B2B entities** describe relationships to accounts and opportunities.
+
+The important constraint: **dimensional and B2B entities are batch-only** — available to batch segmentation only, not streaming. Both are linked to the primary entity through schema relationships. See [[segmentation-and-audiences]] for how this constrains evaluation methods.
+
+## What feeds Profile
+
+Only schemas explicitly enabled for Profile and tagged into the **union schema** participate. The union view is the merged picture of all of an entity's fragments across datasets.
+
+Ingestion runs in two modes. **Streaming ingestion** carries real-time input; Profile runs streaming segmentation before merging data and updating the union view. **Batch ingestion** handles bulk loads. Updating existing profile data (correcting a record) is done through batch ingestion against a Profile-enabled dataset configured with an upsert tag.
+
+Two operational guardrails: Profile enforces **soft limits** (performance degradation) and **hard limits** (errors and breakage) on schema design. Privacy is built in — opt-out requests on data usage and storage are honoured at the Profile level.`,
+    oq: [
+      'Identity Service and the identity graph are referenced heavily but not yet covered by their own article. The mechanics of identity stitching (private graph vs. none) sit at the Profile/Identity boundary.',
+      'Merge policy priority order and how it interacts with timestamp-based resolution needs a dedicated source.',
+      'The actual guardrail numbers (soft/hard limits) live in the Profile guardrails doc, not yet ingested.'
+    ]
+  },
+  {
+    id: 'segmentation-and-audiences',
+    title: 'Segmentation and Audiences',
+    status: 'emerging',
+    updated: '2026-05-26',
+    sources: ['segmentation-service-overview-adobe'],
+    related: ['real-time-customer-profile','xdm-schemas'],
+    blurb: 'Turning Profile data into audiences — segment definitions, PQL, and the three evaluation methods (streaming, batch, edge).',
+    summary: `Segmentation Service turns Real-Time Customer Profile data into audiences — groups of people who share behaviours or characteristics. You describe the group with a segment definition (ultimately PQL under the hood), and Platform evaluates it through one of three methods: streaming, batch, or edge. The resulting audiences are maintained centrally and readable by any Adobe app, and audience membership is written back onto qualifying profiles.`,
+    body: `## Core concepts
+
+Three terms anchor everything. An **audience** is the collection of people. A **segment definition** is the rule set describing them. **Segmenting** (as a verb) is the act of separating profiles into audiences. An audience can be generated by Platform from a segment definition, or it can come from an external source — both are first-class.
+
+There's more than one way to build one. The two common paths are a **segment definition** — built in the Segment Builder UI or via API — and **Audience Composition**, where you compose an audience directly. Whichever path you take, the definition compiles down to **Profile Query Language (PQL)**, the language built to retrieve profiles matching the criteria.
+
+Two further options exist for enterprise data: **Federated Audience Composition** builds or enriches audiences from a data warehouse without copying the underlying data, and Data Distiller is available as another route.
+
+## Evaluation methods
+
+The evaluation method is the decision with the most operational weight, because it sets latency and freshness:
+
+- **Streaming segmentation** — ongoing evaluation. Once saved, the definition runs against data as it flows into Profile. Additions and removals are processed continuously so the audience stays current.
+- **Batch segmentation** — moves all profile data through the definitions at once. Batch audiences re-evaluate automatically every 24 hours; a segment job triggers an on-demand run.
+- **Edge segmentation** — evaluates on the Edge Network instantaneously. This is what makes same-page and next-page personalisation possible.
+
+Recall from [[real-time-customer-profile]] that dimensional and B2B entities are batch-only — so any definition that reaches outside the primary profile entity is constrained to batch evaluation regardless of how fresh you'd like it.
+
+## Metadata and naming
+
+Every segment definition requires two pieces of metadata: a **name** and a **merge policy**. Names should be descriptive, concise, and unique — definitions can reference and combine with each other, so name them like they'll be reused. The merge policy determines how Profile prioritises data for that evaluation; if you don't specify one, the org's default applies.
+
+Audience size **estimation** always uses the org's default profile merge policy — a subtle gotcha when an estimate looks off.
+
+## Advanced features
+
+Three advanced features, each requiring streaming data ingestion:
+
+**Sequential segmentation** captures an ordered journey — product view, then add, then checkout, then no purchase — using the visual event timeline.
+
+**Dynamic segmentation** uses variables instead of enumerating every case: rather than 50 separate definitions, one variable-based definition expresses "a purchase where the purchase state isn't the customer's home state," collapsing 50 segments into one.
+
+**Multi-entity segmentation** extends profile data with non-person dimension entities (products, stores) so the engine can reference those fields as if they were native to the profile store.`,
+    oq: [
+      'PQL is the substrate under every definition but has no source ingested yet — strong candidate for its own article.',
+      'Activation/destinations (how an audience actually leaves Platform for a marketing channel) is out of scope of the current source.',
+      'Streaming vs. batch eligibility rules (which query shapes qualify for streaming) are referenced indirectly but not spelled out here.'
+    ]
+  },
+  {
+    id: 'customer-journey-analytics',
+    title: 'Customer Journey Analytics',
+    status: 'emerging',
+    updated: '2026-05-26',
+    sources: ['cja-configuration-best-practices', 'aep-xdm-schema-best-practices', 'adobe-web-sdk-best-practices'],
+    related: ['xdm-schemas','web-sdk-implementation','real-time-customer-profile'],
+    blurb: 'The analysis layer on AEP data — stable component IDs, the single-dataset stitching constraint, and why CJA readiness is decided upstream.',
+    summary: `Customer Journey Analytics (CJA) is the analysis layer that reports on AEP data. Several of its most consequential constraints don't live in CJA at all — they're decided upstream in schema and dataset design and at collection time in the Web SDK. Two practitioner rules anchor a clean CJA setup: give every data view component a stable, custom ID so it survives data-view switches in Workspace, and keep web and mobile in one event-based dataset so stitching can actually stitch.`,
+    body: `## Stable component IDs
+
+**Data view components need stable, custom IDs.** In CJA you build data views and define their components — metrics and dimensions — on top of your data. Each component should be configured with a custom, camelCase component ID rather than an auto-generated one. When an analyst builds a Workspace project and then switches it to a different data view, the components only keep working if their IDs are stable and consistent across those data views. Default or inconsistent IDs break that cross-data-view behaviour.
+
+## Stitching is a dataset-design decision
+
+**CJA's cross-device stitching only operates within a single event-based dataset** — it cannot stitch across two separate datasets. That makes the upstream modelling choice decisive: web and mobile app should share one schema and, critically, one event-based dataset. Put web in one dataset and mobile in another and CJA has no way to connect a person across their devices. The schema-side detail behind this lives in [[xdm-schemas]].
+
+## \`eventType\` becomes a CJA metric
+
+The schema pattern of modelling events as camelCase strings in the standard \`eventType\` field (instead of a separate field per event) pays off directly in CJA: you add \`eventType\` as a metric and pin it to the expected string through the component's Include/Exclude Values option. A scalable schema and a scalable set of CJA metrics are the same design decision viewed from two ends.
+
+## Unit and total fields
+
+Carrying both per-item and aggregate values in the schema (\`unitPrice\`/\`totalPrice\`, \`unitDiscount\`/\`totalDiscount\`) keeps reporting simple — totals are ready to use in CJA, while unit values remain available for cases like Event Forwarding to third parties. See [[xdm-schemas]] for the modelling guidance.
+
+## A Web SDK migration is not a CJA implementation
+
+Moving Adobe Analytics from AppMeasurement to the Web SDK using the \`data\` object is the right call for Analytics, but it does not produce CJA-ready data. The \`data\` object follows Adobe Analytics syntax, which CJA can't use, and product data in particular diverges (CJA wants an array of objects; Analytics has no such concept). CJA readiness comes from XDM design, not from the collection library. The full argument is in [[web-sdk-implementation]].`,
+    oq: [
+      'The CJA architecture above the component level — connections (how AEP datasets are brought into CJA), data view setup beyond component IDs — isn\'t covered by an ingested source yet.',
+      'CJA stitching vs. Real-Time Customer Profile identity stitching: they share a name and goal but are distinct systems — worth a direct contrast once a source covers both.',
+      'Persisted/derived fields, allocation, and attribution settings in data views are core CJA configuration but unsourced here.'
+    ]
+  }
+];
+
+const BY_ID = Object.fromEntries(ARTICLES.map(a => [a.id, a]));
+
+const OQ = {
+  candidates: [
+    { text: '[[identity-service|Identity Service]] — Identity Service and the identity graph get referenced by [[real-time-customer-profile]] and [[segmentation-and-audiences]] but have no article yet. Strong candidate once a primary source is ingested.' },
+    { text: '[[merge-policies|Merge Policies]] — Referenced in three places (Profile, segmentation, identity stitching). Deserves its own article covering priority order, identity stitching (private graph vs. none), and the org default.' },
+    { text: '[[datasets-and-data-lake|Datasets and the Data Lake]] — Described inside [[xdm-schemas]], and the single-event-dataset stitching rule in [[customer-journey-analytics]] gives them new weight. Warrants a standalone article.' },
+    { text: '[[pql|PQL]] — Profile Query Language underpins every segment definition. No source ingested yet.' },
+    { text: '[[destinations|Destinations]] — How audiences leave AEP for activation. Out of scope of current sources; needs its own ingest.' },
+    { text: '[[sandboxes|Sandboxes]] — Core to any implementation but not yet covered by an ingested source.' },
+    { text: '[[event-forwarding|Event Forwarding]] — The server-side rules engine for third-party relay, now referenced by [[datastreams-and-edge-network]], [[web-sdk-implementation]], and [[customer-journey-analytics]]. No dedicated source yet.' },
+  ],
+  gaps: [
+    { text: 'The datastreams source is overview-level and skewed toward sensitive-data handling. The mechanics of configuring a datastream and mapping schema fields with Data Prep live in separate docs not yet ingested.' },
+    { text: 'The Web SDK client side is partly covered (migration strategy, the data object, s.events/s.products handling), but the Tags/Launch extension surface — configure/sendEvent commands, consent integration — still has no source.' },
+    { text: 'CJA above the component level is unsourced: connections, data view setup beyond component IDs, and configuration like persisted/derived fields, allocation, and attribution.' },
+    { text: 'Profile guardrails (soft vs. hard limits) are mentioned but not quantified — the numbers live in the dedicated guardrails doc.' },
+    { text: 'Profile-enablement planning (when to enable a schema for Profile) isn\'t backed by a source.' },
+  ],
+  tensions: [
+    { text: 'Watch item (not yet a tension): CJA cross-device stitching (a dataset-level operation, per [[customer-journey-analytics]]) versus Real-Time Customer Profile identity stitching (an identity-graph operation, per [[real-time-customer-profile]]). They share a name and a goal but are distinct systems — worth a direct contrast once a source covers both.' }
+  ]
+};
+
+// ─────────────────────────────────────────────────────────
+//  MARKDOWN RENDERER
+// ─────────────────────────────────────────────────────────
+
+function inline(text) {
+  // [[slug]] and [[slug|label]]
+  text = text.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, slug, label) => {
+    const id = slug.trim();
+    const lbl = (label || slug).trim();
+    if (BY_ID[id]) return `<span class="wikilink" onclick="go('article','${id}')">${lbl}</span>`;
+    return `<span class="wikilink-dead">${lbl}</span>`;
+  });
+  text = text.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  return text;
+}
+
+function md(raw) {
+  const lines = raw.split('\n');
+  let html = '', buf = [], inUL = false, inOL = false;
+  const flush = () => {
+    if (!buf.length) return;
+    const t = buf.join(' ').trim();
+    if (t) html += `<p>${inline(t)}</p>`;
+    buf = [];
+  };
+  const closeList = () => {
+    if (inUL) { html += '</ul>'; inUL = false; }
+    if (inOL) { html += '</ol>'; inOL = false; }
+  };
+  for (const line of lines) {
+    if (/^## /.test(line)) { closeList(); flush(); html += `<h2>${inline(line.slice(3).trim())}</h2>`; }
+    else if (/^### /.test(line)) { closeList(); flush(); html += `<h3>${inline(line.slice(4).trim())}</h3>`; }
+    else if (/^- /.test(line)) {
+      flush();
+      if (!inUL) { closeList(); html += '<ul>'; inUL = true; }
+      html += `<li>${inline(line.slice(2))}</li>`;
+    } else if (/^\d+\. /.test(line)) {
+      flush();
+      if (!inOL) { closeList(); html += '<ol>'; inOL = true; }
+      html += `<li>${inline(line.replace(/^\d+\. /, ''))}</li>`;
+    } else if (!line.trim()) {
+      closeList(); flush();
+    } else {
+      if (inUL || inOL) closeList();
+      buf.push(line.trim());
+    }
+  }
+  closeList(); flush();
+  return html;
+}
+
+// ─────────────────────────────────────────────────────────
+//  VIEWS
+// ─────────────────────────────────────────────────────────
+
+function viewHome() {
+  const cards = ARTICLES.map(a => `
+    <div class="a-card" onclick="go('article','${a.id}')">
+      <div class="card-top">
+        <div class="card-title">${a.title}</div>
+        <span class="sp sp-${a.status}">${a.status === 'established' ? 'Estab.' : 'Emerg.'}</span>
+      </div>
+      <div class="card-desc">${a.blurb}</div>
+      <div class="card-foot">Updated ${a.updated}</div>
+    </div>`).join('');
+
+  return `
+    <div class="home-kicker">Adobe Experience Platform</div>
+    <div class="home-title">Knowledge Base</div>
+    <div class="home-desc">A practitioner's reference for AEP core services, Real-Time CDP, data collection, and implementation patterns. Articles assume working fluency with Adobe terminology.</div>
+    <div class="flow-box"><strong>Data flow through the platform:</strong> data is modelled in <span class="wikilink" onclick="go('article','xdm-schemas')">XDM Schemas</span>, collected by the client via <span class="wikilink" onclick="go('article','web-sdk-implementation')">Web SDK</span>, routed server-side through <span class="wikilink" onclick="go('article','datastreams-and-edge-network')">Datastreams</span>, unified into a customer view in <span class="wikilink" onclick="go('article','real-time-customer-profile')">Real-Time Customer Profile</span>, divided into groups via <span class="wikilink" onclick="go('article','segmentation-and-audiences')">Segmentation</span>, and analysed in <span class="wikilink" onclick="go('article','customer-journey-analytics')">Customer Journey Analytics</span>. A recurring theme: CJA's constraints are decided upstream in schema and collection design.</div>
+    <div class="sec-label">All Articles (${ARTICLES.length})</div>
+    <div class="article-grid">${cards}</div>`;
+}
+
+function viewArticle(id) {
+  const a = BY_ID[id];
+  if (!a) return `<p style="color:#64748b;padding:40px 0">Article not found: ${id}</p>`;
+
+  const chips = a.related.filter(r => BY_ID[r]).map(r => `
+    <div class="related-chip" onclick="go('article','${r}')">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      ${BY_ID[r].title}
+    </div>`).join('');
+
+  const srcTags = a.sources.map(s => `<span class="src-tag">${s}</span>`).join('');
+  const oqItems = a.oq.map(q => `<li>${inline(q)}</li>`).join('');
+
+  return `
+    <div class="art-header">
+      <div class="art-title">${a.title}</div>
+      <div class="art-meta">
+        <span class="sp sp-${a.status}">${a.status}</span>
+        <span class="meta-date">Updated ${a.updated}</span>
+        <span class="meta-date">·</span>
+        <span class="meta-date">Sources:</span>
+        ${srcTags}
+      </div>
+    </div>
+    <div class="art-summary">${inline(a.summary)}</div>
+    <div class="art-body">${md(a.body)}</div>
+    ${chips ? `<div class="related-section"><div class="sec-label">Related Articles</div><div class="related-grid">${chips}</div></div>` : ''}
+    ${oqItems ? `<div class="oq-section"><div class="oq-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>Open Questions</div><ul>${oqItems}</ul></div>` : ''}`;
+}
+
+function viewSearch(q) {
+  if (!q) return viewHome();
+  const ql = q.toLowerCase();
+  const hits = ARTICLES.filter(a =>
+    a.title.toLowerCase().includes(ql) ||
+    a.summary.toLowerCase().includes(ql) ||
+    a.body.toLowerCase().includes(ql) ||
+    a.blurb.toLowerCase().includes(ql)
+  );
+  if (!hits.length) return `<div class="empty">
+    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <div class="empty-title">No results for "${q}"</div>
+    <div class="empty-desc">Topics covered: schemas, Web SDK, segmentation, CJA, Profile, datastreams.</div></div>`;
+
+  function snip(text) {
+    const i = text.toLowerCase().indexOf(ql);
+    if (i === -1) return text.slice(0, 130) + '…';
+    const s = Math.max(0, i - 45), e = Math.min(text.length, i + ql.length + 90);
+    return (s > 0 ? '…' : '') +
+      text.slice(s, e).replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<mark>${m}</mark>`) +
+      (e < text.length ? '…' : '');
+  }
+
+  const items = hits.map(a => `
+    <div class="sr-item" onclick="go('article','${a.id}')">
+      <div class="sr-top">
+        <span class="sr-title">${a.title}</span>
+        <span class="sp sp-${a.status}">${a.status}</span>
+      </div>
+      <div class="sr-snip">${snip(a.summary + ' ' + a.body)}</div>
+    </div>`).join('');
+
+  return `<div class="sec-label" style="margin-bottom:16px">${hits.length} result${hits.length > 1 ? 's' : ''} for "${q}"</div>${items}`;
+}
+
+function viewQuestions() {
+  const mkRow = (dot, color, text) => `
+    <div class="qp-row">
+      <div class="qp-dot" style="color:${color}">${dot}</div>
+      <div class="qp-text">${inline(text)}</div>
+    </div>`;
+
+  return `
+    <div class="art-header">
+      <div class="art-title">Open Questions</div>
+      <div style="font-size:13.5px;color:#64748b;line-height:1.7;margin-top:6px">Open threads, gaps, held tensions, and future article candidates. Updated on every compile pass and health check.</div>
+    </div>
+    <div class="qp-cat">
+      <div class="qp-cat-title">Future Article Candidates</div>
+      ${OQ.candidates.map(c => mkRow('◆', '#fcd34d', c.text)).join('')}
+    </div>
+    <div class="qp-cat">
+      <div class="qp-cat-title">Gaps in Current Sources</div>
+      ${OQ.gaps.map(g => mkRow('○', '#94a3b8', g.text)).join('')}
+    </div>
+    <div class="qp-cat">
+      <div class="qp-cat-title">Held Tensions</div>
+      ${OQ.tensions.map(t => mkRow('⚡', '#f87171', t.text)).join('')}
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────────────────
+
+function go(view, id) {
+  // Pills
+  document.getElementById('pill-wiki').className  = 'nav-pill' + (view !== 'questions' ? ' active' : '');
+  document.getElementById('pill-qs').className     = 'nav-pill' + (view === 'questions' ? ' active' : '');
+
+  // Sidebar active state
+  document.querySelectorAll('.sb-item').forEach(el => el.classList.remove('active'));
+  if (view === 'home') document.getElementById('sl-home').classList.add('active');
+  else if (view === 'questions') document.getElementById('sl-questions').classList.add('active');
+  else if (view === 'article' && BY_ID[id]) {
+    const el = document.getElementById('sl-' + id);
+    if (el) el.classList.add('active');
+  }
+
+  // Clear search unless this IS a search
+  if (view !== 'search') document.getElementById('search').value = '';
+
+  // Render with fade
+  const el = document.getElementById('content');
+  el.style.opacity = 0;
+  setTimeout(() => {
+    let html = '';
+    if (view === 'home')       html = viewHome();
+    else if (view === 'article')   html = viewArticle(id);
+    else if (view === 'search')    html = viewSearch(id);
+    else if (view === 'questions') html = viewQuestions();
+    el.innerHTML = html;
+    el.style.opacity = 1;
+    document.getElementById('main').scrollTop = 0;
+  }, 100);
+}
+
+// ─────────────────────────────────────────────────────────
+//  SEARCH
+// ─────────────────────────────────────────────────────────
+
+let searchTimer;
+document.getElementById('search').addEventListener('input', e => {
+  clearTimeout(searchTimer);
+  const q = e.target.value.trim();
+  searchTimer = setTimeout(() => go(q ? 'search' : 'home', q), 180);
+});
+
+document.getElementById('search').addEventListener('keydown', e => {
+  if (e.key === 'Escape') { e.target.value = ''; go('home'); }
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement.id !== 'search') {
+    e.preventDefault();
+    document.getElementById('search').focus();
+  }
+});
+
+// ─────────────────────────────────────────────────────────
+//  BUILD SIDEBAR & INIT
+// ─────────────────────────────────────────────────────────
+
+document.getElementById('sb-articles').innerHTML = ARTICLES.map(a => `
+  <div class="sb-item" id="sl-${a.id}" onclick="go('article','${a.id}')">
+    <span class="sb-item-title">${a.title}</span>
+    <span class="sp sp-${a.status}">${a.status === 'established' ? 'E' : '~'}</span>
+  </div>`).join('');
+
+go('home');
+</script>
+</body>
+</html>
